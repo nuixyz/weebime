@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./TimeSchedule.css";
 
 function TimeSchedule() {
   const [schedule, setSchedule] = useState([]);
@@ -20,22 +21,31 @@ function TimeSchedule() {
       });
   }, []);
 
-  // Debug log to check if component is rendering
   console.log("Current schedule:", schedule);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Anime Schedule</h1>
+    <div className="anime-schedule-container">
+      <h1 className="schedule-title">Anime Schedule</h1>
       {Array.isArray(schedule) && schedule.length > 0 ? (
-        schedule.map((anime, index) => (
-          <div key={index} className="mb-6 p-4 border rounded">
-            <h2 className="text-xl font-semibold mb-2">{anime.title}</h2>
-            <p className="mb-2">Airing Time: {anime.animeDate}</p>
-            <p className="mb-2">Genres: {anime.genre}</p>
-          </div>
-        ))
+        <div className="anime-grid">
+          {schedule.map((anime, index) => (
+            <div key={index} className="anime-card">
+              <img
+                className="anime-poster"
+                src={anime.poster}
+                alt={anime.title}
+              />
+              <h2 className="anime-title">{anime.title}</h2>
+              <p className="anime-studio">Studio: {anime.studio}</p>
+              <p className="anime-airing-time">
+                Airing Time: {anime.animeDate}
+              </p>
+              <p className="anime-genres">Genres: {anime.genre}</p>
+            </div>
+          ))}
+        </div>
       ) : (
-        <p>Loading schedule data...</p>
+        <p className="loading-message">Loading schedule data...</p>
       )}
     </div>
   );

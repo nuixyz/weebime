@@ -2,7 +2,8 @@ import puppeteer from "puppeteer";
 import fs from "fs";
 import cron from "node-cron";
 
-cron.schedule("0 * * * *", async () => {
+// Define the scraping function
+const scrapeAnimeSchedule = async () => {
   console.log("Scraping anime schedule...");
 
   try {
@@ -19,31 +20,34 @@ cron.schedule("0 * * * *", async () => {
     const animeInfo = await page.$$eval(animeCardSelector, (animeCards) => {
       return animeCards.map((card) => {
         const title = card.querySelector(".main-title")?.textContent?.trim();
+        // const poster = [...card.querySelectorAll(".poster")].map((image) =>
+        //   image.getAttribute("src")
+        // );
+        const poster = card
+          .querySelector('img[data-anime-card-target="poster"]')
+          ?.getAttribute("src");
+        const studio = card
+          .querySelector(".anime-studios")
+          ?.textContent?.trim();
         const animeDate = card
           .querySelector(".anime-date")
           ?.textContent?.trim();
         const genreText = [...card.querySelectorAll(".anime-tags")]
           .map((genre) => genre.textContent.trim())
-          .join(""); // First join everything
+          .join("");
 
-        // Split by capital letters and join with commas
-        const genre = genreText
-          .split(/(?=[A-Z])/) // Split before capital letters
-          .join(", ");
-
-        return { title, animeDate, genre };
+        const genre = genreText.split(/(?=[A-Z])/).join(", ");
+        return { title, poster, studio, animeDate, genre };
       });
     });
 
     await browser.close();
 
-    // Ensure directory exists
     const dir = "./ScrapedData";
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
     }
 
-    // Write data to JSON file
     fs.writeFileSync(
       `${dir}/animeSchedule.json`,
       JSON.stringify(animeInfo, null, 2)
@@ -55,4 +59,10 @@ cron.schedule("0 * * * *", async () => {
   } catch (error) {
     console.error("An error occurred during scraping:", error);
   }
-});
+};
+
+// Schedule the scraping task
+cron.schedule("0 * * * *", scrapeAnimeSchedule);
+
+// Fetch data immediately
+scrapeAnimeSchedule();
